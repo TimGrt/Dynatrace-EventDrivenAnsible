@@ -2,7 +2,7 @@
 
 This collection contains the following Event-Driven Ansible source plugins:
 
- * dt_webhook
+ * dt_webhook - Event-Driven Ansible without simplified event routing (event streams)
  * dt_esa_api
 
 ## Auto-Remediation (dt_esa_api)
@@ -50,9 +50,15 @@ This Event source plugin from Dynatrace captures all problems from your Dynatrac
           name: dt-update-comments.yml
 ```
 
-## dt_webhook 
+## dt_webhook - Event-Driven Ansible without simplified event routing (event streams)
 
-The dt_webhook event-source plugin is capable of receiving events from Dynatrace via the "Send event to Event-Driven Ansible" workflow action of the [Red Hat Ansible for Workflows integration](https://docs.dynatrace.com/docs/platform-modules/automations/workflows/actions/red-hat/redhat-even-driven-ansible).
+The dt_webhook event-source plugin is capable of receiving events from Dynatrace via the "Send event to Event-Driven Ansible" workflow action of the [Red Hat Ansible for Workflows integration](https://docs.dynatrace.com/docs/platform-modules/automations/workflows/actions/red-hat/redhat-even-driven-ansible) **without simplified event routing (event streams)**.
+
+The dt_webhook event-source plugin must be installed within a decision environment on the Event-Driven Ansible Controller.
+
+For more information on how to set up a new decision environment, see [Event-Driven Ansible controller user guide](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.5/html/using_automation_decisions/eda-decision-environments).
+
+When **using event streams**, you can use the standard decision environment provided by Red Hat, for example, the [Ansible-rulebook default-de](https://quay.io/repository/ansible/ansible-rulebook?tab=tags&tag=latest). You don't need to build a custom decision environment with the dt_webhook plugin when using event streams.
 
 ### Example rulebook
 
