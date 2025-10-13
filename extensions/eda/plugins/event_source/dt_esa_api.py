@@ -8,6 +8,71 @@ from typing import Any
 # pylint: disable-next=import-error
 import aiohttp
 
+DOCUMENTATION = r"""
+---
+name: dt_esa_api.py
+description:
+  - This Event source plugin from Dynatrace captures all problems
+    from your Dynatrace tenant and in conjunction with Ansible EDA
+    rulebooks helps to enable auto-remediation in your environment.
+options:
+  dt_api_host:
+    description:
+      - The URL of the Dynatrace tenant
+  dt_api_token:
+    description:
+      - The API token to connect to Dynatrace
+  delay:
+    description:
+      - Delay between polling requests in seconds
+    default: 60
+  proxy:
+    description:
+      - Proxy URL through which to access host
+    default: none
+"""
+
+EXAMPLES = r"""
+- name: Listen for events on a webhook
+  hosts: all
+  sources:
+    - dynatrace.event_driven_ansible.dt_esa_api:
+        dt_api_host: "https://abc.live.dynatrace.com"
+        dt_api_token: "<yourtoken>"
+        delay: 60
+        proxy: "http://my-proxy:3128"
+
+  rules:
+    - name: Problem payload Dynatrace for CPU issue
+      condition: event.title is match("CPU saturation")
+      action:
+        run_job_template:
+          name: "Remediate CPU saturation issue"
+          organization: "Default"
+    - name: Problem payload Dynatrace for App Failure rate increase issue
+      condition: event.title is match("Failure rate increase")
+      action:
+        run_job_template:
+          name: "Remediate Application issue"
+          organization: "Default"
+    - name: Update comments in Dynatrace
+      condition:
+        all:
+          - event.status == "OPEN"
+      action:
+        run_playbook:
+          name: dt-update-comments.yml
+"""
+
+logger = logging.getLogger(__name__)
+
+# initialize logger configuration
+def _initialize_logger_config() -> None:
+    logging.basicConfig(
+        format="[%(asctime)s] - %(pathname)s: %(message)s",
+        level=logging.INFO,
+        datefmt="%Y-%m-%d %I:%M:%S",
+    )
 
 async def getproblems(dt_host: str, dt_token: str, proxy: str) -> None:
     """Pull Dynatrace detected problems from Dynatrace Problems API.
@@ -37,11 +102,11 @@ async def getproblems(dt_host: str, dt_token: str, proxy: str) -> None:
             try:
                 return await resp.json()
             except aiohttp.ClientResponseError:
-                logging.exception("Exception in response from Dynatrace API")
+                logger.exception("Exception in response from Dynatrace API")
             except aiohttp.ClientConnectionError:
-                logging.exception("Exception connecting to Dynatrace API")
+                logger.exception("Exception connecting to Dynatrace API")
             except aiohttp.ClientError:
-                logging.exception("aiohttp client Exception")
+                logger.exception("aiohttp client Exception")
 
 
 async def updatedtproblem(prob_id: str, dtapihost: str, dtapitoken: str,
@@ -74,14 +139,14 @@ async def updatedtproblem(prob_id: str, dtapihost: str, dtapitoken: str,
             resp = await session.post(url, json=commentbody, proxy=proxy)
             warning_status = 201
             if resp.status != warning_status:
-                logging.warning(resp.status)
-                logging.warning(resp.text)
+                logger.warning(resp.status)
+                logger.warning(resp.text)
         except aiohttp.ClientResponseError:
-            logging.exception("Exception in response from Dynatrace API")
+            logger.exception("Exception in response from Dynatrace API")
         except aiohttp.ClientConnectionError:
-            logging.exception("Exception connecting to Dynatrace API")
+            logger.exception("Exception connecting to Dynatrace API")
         except aiohttp.ClientError:
-            logging.exception("aiohttp client Exception")
+            logger.exception("aiohttp client Exception")
 
 
 async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
@@ -95,6 +160,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         Args containing the host and API access token.
 
     """
+    _initialize_logger_config()
     dt_api_host = args.get("dt_api_host")
     dt_api_token = args.get("dt_api_token")
     delay = int(args.get("delay", 60))
@@ -111,7 +177,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                         # ignore this problem
                         commentcount = commentcount + 1
                 if commentcount > 0:
-                    logging.info("This problem has already been sent to EDA server")
+                    logger.info("This problem has already been sent to EDA server")
                 else:
                     prob_id = problem.get("problemId")
                     await queue.put(problem)
@@ -119,4 +185,4 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                     await updatedtproblem(prob_id, dt_api_host, dt_api_token, proxy)
             await asyncio.sleep(delay)
     except (asyncio.TimeoutError, asyncio.CancelledError):
-        logging.exception("Async request timed out or cancelled")
+        logger.exception("Async request timed out or cancelled")
