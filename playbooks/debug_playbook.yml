@@ -1,0 +1,10 @@
+---
+
+- name: Debug
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Panic
+      ansible.builtin.debug:
+        msg: "Do something!"
