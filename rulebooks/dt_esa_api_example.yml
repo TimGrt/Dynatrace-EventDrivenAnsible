@@ -1,7 +1,8 @@
 - name: Listen for events on a webhook
   hosts: all
   sources:
-    - dynatrace.event_driven_ansible.dt_esa_api:
+    - name: Dynatrace sgb38850
+      dynatrace.event_driven_ansible.dt_esa_api:
         dt_api_host: "https://sgb38850.live.dynatrace.com"
         dt_api_token: !vault |
           $ANSIBLE_VAULT;1.1;AES256
@@ -16,26 +17,27 @@
           64643631623431393033646461366166373465323661613632383034613864343134
         delay: 60
   rules:
-    - name: Problem payload Dynatrace for OOM kills issue
+    - name: Problem - OOM kills
       condition: event.title is match("Out-of-memory kills")
       action:
         run_job_template:
           name: "Dynatrace Debug"
           organization: "Default"
-    - name: Problem payload Dynatrace for No pod ready issue
+    - name: Problem - No pod ready
       condition: event.title is match("No pod ready")
       action:
         run_job_template:
           name: "Dynatrace Debug"
           organization: "Default"
-    - name: Problem payload Dynatrace for Backoff events
+    - name: Problem - Backoff events
       condition: event.title is match("Backoff event")
       action:
         run_job_template:
           name: "Dynatrace Debug"
           organization: "Default"
-    - name: Problem payload Dynatrace for Failure rate increase
-      condition: event.title is match("Failure rate increase")
+    - name: Problem - Response time degradation
+      condition: event.title is match("Response time degradation")
       action:
-        print_event:
-          pretty: true
+        run_job_template:
+          name: "Dynatrace Debug"
+          organization: "Default"
