@@ -28,3 +28,9 @@
         run_job_template:
           name: "Dynatrace Debug"
           organization: "Default"
+    - name: Problem payload Dynatrace for Backoff events
+      condition: event.title is match("Backoff events")
+      action:
+        run_job_template:
+          name: "Dynatrace Debug"
+          organization: "Default"
