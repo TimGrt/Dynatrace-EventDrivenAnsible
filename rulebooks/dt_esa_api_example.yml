@@ -16,8 +16,14 @@
           64643631623431393033646461366166373465323661613632383034613864343134
         delay: 60
   rules:
-    - name: Problem payload Dynatrace for CPU issue
-      condition: event.title is match("CPU saturation")
+    - name: Problem payload Dynatrace for OOM kills issue
+      condition: event.title is match("Out-of-memory kills")
+      action:
+        run_job_template:
+          name: "Dynatrace Debug"
+          organization: "Default"
+    - name: Problem payload Dynatrace for No pod ready issue
+      condition: event.title is match("No pod ready")
       action:
         run_job_template:
           name: "Dynatrace Debug"
