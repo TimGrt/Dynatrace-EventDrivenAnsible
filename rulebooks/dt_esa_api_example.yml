@@ -34,3 +34,8 @@
         run_job_template:
           name: "Dynatrace Debug"
           organization: "Default"
+    - name: Problem payload Dynatrace for Failure rate increase
+      condition: event.title is match("Failure rate increase")
+      action:
+        print_event:
+          pretty: true
