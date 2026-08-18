@@ -2,7 +2,7 @@
   hosts: all
   sources:
     - dynatrace.event_driven_ansible.dt_esa_api:
-        dt_api_host: "https://sgb38850.live.dynatrace.com/"
+        dt_api_host: "https://sgb38850.live.dynatrace.com"
         dt_api_token: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           37346339346433643336383232666635323435396332643334313232633966656534633237396239
