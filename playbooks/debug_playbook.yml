@@ -5,6 +5,11 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: Panic
+    - name: Panic!
       ansible.builtin.debug:
         msg: "Do something!"
+    
+    - name: Print Dynatrace event
+      ansible.builtin.debug:
+        msg: "{{ ansible_eda.event.payload }}"
+  
